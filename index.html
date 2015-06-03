@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>This Is The Name Of Your Specification</title>
+    <title>ImageBitmap Extensions</title>
     <meta charset='utf-8'>
     <script src='https://www.w3.org/Tools/respec/respec-w3c-common'
             async class='remove'></script>
@@ -9,9 +9,9 @@
       var respecConfig = {
           // specification status (e.g. WD, LCWD, WG-NOTE, etc.). If in doubt use ED.
           specStatus:           "ED",
-          
+
           // the specification's short name, as in http://www.w3.org/TR/short-name/
-          shortName:            "xxx-xxx",
+          // shortName:            "imagebitmap-extension",
 
           // if your specification has a subtitle that goes below the main
           // formal title, define it here
@@ -30,7 +30,7 @@
           // previousMaturity:  "WD",
 
           // if there a publicly available Editor's Draft, this is the link
-          // edDraftURI:           "http://berjon.com/",
+          edDraftURI:           "http://kakukogou.github.io/spec-imagebitmap-extension",
 
           // if this is a LCWD, uncomment and set the end of its review period
           // lcEnd: "2009-08-05",
@@ -39,23 +39,21 @@
           // only "name" is required
           editors:  [
               {
-                  name:       "Your Name"
-              ,   url:        "http://example.org/"
-              ,   mailto:     "you@example.org"
-              ,   company:    "Your Company"
-              ,   companyURL: "http://example.com/"
+                  name:       "Tzu-Hao, Kuo",
+                  company:    "Mozilla",
+                  companyURL: "http://www.mozilla.com/"
               },
           ],
-          
+
           // name of the WG
           wg:           "In Charge Of This Document Working Group",
-          
+
           // URI of the public WG page
           wgURI:        "http://example.org/really-cool-wg",
-          
+
           // name (without the @w3c.org) of the public mailing to which comments are due
           wgPublicList: "spec-writers-anonymous",
-          
+
           // URI of the patent status for this WG, for Rec-track documents
           // !!!! IMPORTANT !!!!
           // This is important for Rec-track documents, do not copy a patent URI from a random
@@ -69,24 +67,518 @@
   <body>
     <section id='abstract'>
       <p>
-        This is the abstract for your specification.
+        This specification extends the ImageBitmap interface to allow JavaScript
+        developers to read an ImageBitmap's underlying data out and set an
+        external data into an ImageBitmap in a set of supported color formats.
+      </p>
+      <p>
+
       </p>
     </section>
-    
+
     <section id='sotd'>
       <p>
-        You need to have a custom SotD paragraph. Maybe give a succinct description of your spec's
-        status.
+        <strong>This document is not complete and is subject to change. Early
+        experimentations are encouraged to allow the Media Capture Task Force
+        to evolve the specification based on technical discussions within the
+        Task Force, implementation experience gained from early
+        implementations, and feedback from other groups and
+        individuals.</strong>
       </p>
     </section>
-    
+
     <section>
-      <h2>Section Title</h2>
+      <h2>Introduction</h2>
       <p>
-        Blah blah blah...
+        This is a sub-bug of project FoxEye which's goal is to streamline the video
+        processing framework on the web platform. It provides web applications a way
+        to hook a script (ran in a Web Worker) to a video track (of a MediaStream)
+        so that each frame will be processed accordingly.
+      </p>
+      <p>
+        We choose ImageBitmap (instead of ImageData) as the container of video frames
+        because the decoded video frame data might exist in either CPU or GPU memory.
+        ImageBitmap is designed as an opaque handler so that users do not need to
+        know where the real buffer is.
+      </p>
+      <p>
+        Considering how would developers process video frames, there are two possible
+        ways, via JavaScript(/asm.js) or WebGL.
+        <ol>
+          <li>
+            If users use WebGL, then treating an ImageBitmap as an opaque container
+            and passing it into WebGL.
+          </li>
+          <li>
+            If users use JavaScript(/asm.js) to process the frames, then new APIs to
+            access the raw data inside an ImageBitmp are needed.
+          </li>
+        </ol>
+        The 2nd scenario above is the one which I would like to enable in this
+        extension set.
       </p>
     </section>
-    
+
+    <section>
+      <h2>Color format</h2>
+      <p>
+        Image/Video data might exists in a variety of color formats. Developers need
+        to know how the data is formated so that they are able to process it.
+        Information that we need to know about a color format includes color space,
+        channel permutation and the pixel layout. A color space is the space used to
+        express colors; the space is constructed by coordinates which is called color
+        channels. An image or video frame is composed by pixels and each pixel's
+        color is represented by values from all channels of a given color space. The
+        pixel values might be arranged in a planar way or interleaving way:
+        <ol>
+          <li>
+            Planar layout: each channel has its pixel values stored consecutively in
+            separated buffers (/planes) and channel buffers are stored consecutively
+            in memory.
+            (Ex: RRRRRR......GGGGGG......BBBBBB......)
+          </li>
+          <li>
+            Interleaving layout: each pixel has its pixel values from all channels
+            stored together and interleaves all channels.
+            (Ex: RGBRGBRGBRGBRGB......)
+          </li>
+        </ol>
+        Note: color formats belong to the same color space might have different pixel
+              layouts.
+      </p>
+    </section>
+
+    <section>
+      <h2>Components</h2>
+
+      <section>
+        <h2>ColorFormat</h2>
+        <p>
+          An enumeration 'ColorFormat' defines a list of color formats which are
+          exposed to users. The extend APIs of ImageBitmap use this enumeration to
+          negotiate the format while accessing the underlying data of ImageBitmap.
+        </p>
+        <div class="note">
+          <p>
+            We need to elaborate this list for standardization.
+          </p>
+        </div>
+        <dl id="enum-basic" class="idl" title="enum ColorFormat">
+          <dt>RGBA32</dt>
+          <dd>
+            <p>Channel order: R, G, B, A</p>
+            <p>Channel size: full rgba-chennels</p>
+            <p>Pixel layout: interleaving rgba-channels</p>
+          </dd>
+          <dt>BGRA32</dt>
+          <dd>
+            <p>Channel order: B, G, R, A</p>
+            <p>Channel size: full bgra-channels</p>
+            <p>Pixel layout: interleaving bgra-channels</p>
+          </dd>
+          <dt>RGB24</dt>
+          <dd>
+            <p>Channel order: R, G, B</p>
+            <p>Channel size: full rgb-channels</p>
+            <p>Pixel layout: interleaving rgb-channels</p>
+          </dd>
+          <dt>BGR24</dt>
+          <dd>
+            <p>Channel order: B, G, R</p>
+            <p>Channel size: full bgr-channels</p>
+            <p>Pixel layout: interleaving bgr-channels</p>
+          </dd>
+          <dt>GRAY8</dt>
+          <dd>
+            <p>Channel order: GRAY</p>
+            <p>Channel size: full gray-channel</p>
+            <p>Pixel layout: planar gray-channel</p>
+          </dd>
+          <dt>YUV444P</dt>
+          <dd>
+            <p>Channel order: Y, U, V</p>
+            <p>Channel size: full yuv-channels</p>
+            <p>Pixel layout: planar yuv-channels</p>
+          </dd>
+          <dt>YUV422P</dt>
+          <dd>
+            <p>Channel order: Y, U, V</p>
+            <p>Channel size: full y-channel, half uv-channels</p>
+            <p>Pixel layout: planar yuv-channels</p>
+          </dd>
+          <dt>YUV420P</dt>
+          <dd>
+            <p>Channel order: Y, U, V</p>
+            <p>Channel size: full y-channel, quarter uv-channels</p>
+            <p>Pixel layout: planar yuv-channels</p>
+          </dd>
+          <dt>YUV420SP_NV12</dt>
+          <dd>
+            <p>Channel order: Y, U, V</p>
+            <p>Channel size: full y-channel, quarter uv-channels</p>
+            <p>Pixel layout: planar y-channel, interleaving uv-channels</p>
+          </dd>
+          <dt>YUV420SP_NV21</dt>
+          <dd>
+            <p>Channel order: Y, V, U</p>
+            <p>Channel size: full y-channel, quarter uv-channels</p>
+            <p>Pixel layout: planar y-channel, interleaving vu-channels</p>
+          </dd>
+          <dt>HSV</dt>
+          <dd>
+            <p>Channel order: H, S, V</p>
+            <p>Channel size: full hsv-channels</p>
+            <p>Pixel layout: interleaving hsv-channels</p>
+          </dd>
+          <dt>Lab</dt>
+          <dd>
+            <p>Channel order: l, a, b</p>
+            <p>Channel size: full lab-channels</p>
+            <p>Pixel layout: interleaving lab-channels</p>
+          </dd>
+        </dl>
+      </section>
+
+      <section>
+        <h2>PixelLayout</h2>
+        <p>
+          Two interfaces, 'ColorFormatPixelLayout' and 'ChannelPixelLayout', help
+          together to generalize the variety of pixel layouts among color formats.
+        </p>
+        <p>
+          The 'ColorFormatPixelLayout' represents the pixel layout of a certain color
+          space and since a color format is composed by at least one channel so
+          'ColorFormatPixelLayout' contains at least one 'ChannelPixelLayout'.
+        </p>
+        <p>
+          Although Image/Video frame is a two-dimensional structure, its data is
+          usually stored in an one-dimensional array and 'ChannelPixelLayout'
+          use the following properties to describe the layout of pixel values in the
+          buffer.
+          <ol>
+            <li>
+              'offset': where is each channel's data starts from. (Relative to the
+                    beginning of the video data one-dimension array.)
+            </li>
+            <li>
+              'width' and 'height': how much samples are in each channel.
+            </li>
+            <li>
+              'stride': the padding of each row. (Memory alignment purpose.)
+            </li>
+            <li>
+              'skip': this is used to describe interleaving layout. (For planar layout,
+                          this property will be zero.)
+            </li>
+          </ol>
+        </p>
+
+        <pre class='example highlight'>
+          Example1: RGBA image, width = 620, height = 480, stride = 2560
+
+          chanel_r: offset = 0, width = 620, height = 480, stride = 2560, skip = 3
+          chanel_g: offset = 1, width = 620, height = 480, stride = 2560, skip = 3
+          chanel_b: offset = 2, width = 620, height = 480, stride = 2560, skip = 3
+          chanel_a: offset = 3, width = 620, height = 480, stride = 2560, skip = 3
+
+                  <---------------------------- stride ---------------------------->
+                  <---------------------- width x 4 ---------------------->
+          [index] 01234   8   12  16  20  24  28                           2479    2559
+                  |||||---|---|---|---|---|---|----------------------------|-------|
+          [data]  RGBARGBARGBARGBARGBAR___R___R...                         A%%%%%%%%
+          [data]  RGBARGBARGBARGBARGBAR___R___R...                         A%%%%%%%%
+          [data]  RGBARGBARGBARGBARGBAR___R___R...                         A%%%%%%%%
+                       ^^^
+                       r-skip
+        </pre>
+
+        <pre class='example highlight'>
+          Example2: YUV420P image, width = 620, height = 480, stride = 640
+
+          chanel_y: offset = 0, width = 620, height = 480, stride = 640, skip = 0
+          chanel_u: offset = 307200, width = 310, height = 240, stride = 320, skip = 0
+          chanel_v: offset = 384000, width = 310, height = 240, stride = 320, skip = 0
+
+                  <--------------------------- y-stride --------------------------->
+                  <----------------------- y-width ----------------------->
+          [index] 012345                                                  619      639
+                  ||||||--------------------------------------------------|--------|
+          [data]  YYYYYYYYYYYYYYYYYYYYYYYYYYYYY...                        Y%%%%%%%%%
+          [data]  YYYYYYYYYYYYYYYYYYYYYYYYYYYYY...                        Y%%%%%%%%%
+          [data]  YYYYYYYYYYYYYYYYYYYYYYYYYYYYY...                        Y%%%%%%%%%
+          [data]  ......
+                  <-------- u-stride ---------->
+                  <----- u-width ----->
+          [index] 307200              307509   307519
+                  |-------------------|--------|
+          [data]  UUUUUUUUUU...       U%%%%%%%%%
+          [data]  UUUUUUUUUU...       U%%%%%%%%%
+          [data]  UUUUUUUUUU...       U%%%%%%%%%
+          [data]  ......
+                  <-------- v-stride ---------->
+                  <- --- v-width ----->
+          [index] 384000              384309   384319
+                  |-------------------|--------|
+          [data]  VVVVVVVVVV...       V%%%%%%%%%
+          [data]  VVVVVVVVVV...       V%%%%%%%%%
+          [data]  VVVVVVVVVV...       V%%%%%%%%%
+          [data]  ......
+        </pre>
+
+        <pre class='example highlight'>
+          Example3: YUV420SP_NV12 image, width = 620, height = 480, stride = 640
+
+          chanel_y: offset = 0, width = 620, height = 480, stride = 640, skip = 0
+          chanel_u: offset = 307200, width = 310, height = 240, stride = 640, skip = 1
+          chanel_v: offset = 307201, width = 310, height = 240, stride = 640, skip = 1
+
+                  <--------------------------- y-stride -------------------------->
+                  <----------------------- y-width ---------------------->
+          [index] 012345                                                 619      639
+                  ||||||-------------------------------------------------|--------|
+          [data]  YYYYYYYYYYYYYYYYYYYYYYYYYYYYY...                       Y%%%%%%%%%
+          [data]  YYYYYYYYYYYYYYYYYYYYYYYYYYYYY...                       Y%%%%%%%%%
+          [data]  YYYYYYYYYYYYYYYYYYYYYYYYYYYYY...                       Y%%%%%%%%%
+          [data]  ......
+                  <--------------------- u-stride / v-stride -------------------->
+                  <------------------ u-width + v-width ----------------->
+          [index] 307200(u-offset)                                       307819  307839
+                  |------------------------------------------------------|-------|
+          [index] |307201(v-offset)                                      |307820 |
+                  ||-----------------------------------------------------||------|
+          [data]  UVUVUVUVUVUVUVUVUVUVUVUVUVUVUV...                      UV%%%%%%%
+          [data]  UVUVUVUVUVUVUVUVUVUVUVUVUVUVUV...                      UV%%%%%%%
+          [data]  UVUVUVUVUVUVUVUVUVUVUVUVUVUVUV...                      UV%%%%%%%
+                   ^            ^
+                  u-skip        v-skip
+        </pre>
+
+        <section>
+          <h2>ColorFormatPixelLayout</h2>
+          <dl class="idl" title="[Exposed=(Window,Worker)] interface ChannelPixelLayout">
+            <dt>
+              [Constant]
+              readonly attribute unsigned long offset
+            </dt>
+            <dd>
+              <p>
+                The beginning position of this channel's data (relative to the given
+                ArrayBuffer parameter of the mapDataInto() method.)
+              </p>
+            </dd>
+
+            <dt>
+              [Constant]
+              readonly attribute unsigned long width
+            </dt>
+            <dd>
+              <p>
+                The width of this channel.
+                Channels in a color format may have different width.
+              </p>
+            </dd>
+
+            <dt>
+              [Constant]
+              readonly attribute unsigned long height
+            </dt>
+            <dd>
+              <p>
+                The height of this channel.
+                Channels in a color format may have different height.
+              </p>
+            </dd>
+
+            <dt>
+              [Constant]
+              readonly attribute unsigned long stride
+            </dt>
+            <dd>
+              <p>
+                The stride of this channel.
+                This is used to describe the padding of this channel.
+              </p>
+            </dd>
+
+            <dt>
+              [Constant]
+              readonly attribute unsigned long skip
+            </dt>
+            <dd>
+              <p>
+                This is used to describe how much bytes between two adjacent pixel values
+                in this channel.
+              </p>
+              <p>
+                Possible values:
+                <ul>
+                  <li>
+                    zero: for planar format.
+                  </li>
+                  <li>
+                    a positive integer: for interleaving format.
+                  </li>
+                </ul>
+              </p>
+            </dd>
+          </dl>
+        </section>
+
+        <section>
+          <h2>ChannelPixelLayout</h2>
+          <dl class="idl" title="[Exposed=(Window,Worker)] interface ColorFormatPixelLayout">
+            <dt>
+              [Constant, Cached]
+              readonly attribute sequence&lt;ChannelPixelLayout&gt; channels
+            </dt>
+            <dd>
+              <p>
+                Channel information of this color format.
+                Each color format has at least one channel.
+              <p>
+            </dd>
+          </dl>
+        </section>
+      </section>
+
+      <section>
+        <h2>ImageBitmap extensions</h2>
+        <div class="note">
+          <p>
+            We need to redesign the "setDataFrom()" method.
+          </p>
+        </div>
+        <dl class="idl" title="[Exposed=(Window,Worker)] partial interface ImageBitmap">
+          <dt>
+            ColorFormat findOptimalFormat()
+          </dt>
+          <dd>
+            <p>
+              Find the best color format for receiving data.
+            </p>
+            <p>
+              @return one of the possibleFormats or the empty string if no format in the
+                      list is supported. If the possibleFormats is not given, then
+                      returns the best color format for this ImageBitmap from all
+                      supported color formats
+            </p>
+            <dl class="parameters">
+              <dt>optional sequence&lt;ColorFormat&gt; possibleFormats</dt>
+              <dd>
+                <p>A list of color formats that users can handler.</p>
+              </dd>
+            </dl>
+          </dd>
+
+          <dt>
+            [Throws]
+            long mappedDataLength()
+          </dt>
+          <dd>
+            <p>
+              Calculate the length of mapped data wile the image is represented
+              in the given format.
+            </p>
+            <p>
+              Throws if 'format' is not supported.
+            </p>
+            <p>
+              @return the length (in bytes) of image data the represented in the given
+                      format.
+            </p>
+            <dl class="parameters">
+              <dt>ColorFormat format</dt>
+              <dd>
+                <p>The format that users want.</p>
+              </dd>
+            </dl>
+          </dd>
+
+          <dt>
+          [Throws]
+          ColorFormatPixelLayout mapDataInto()
+          </dt>
+          <dd>
+            <p>
+              Makes a copy of the underlying image data in the given format 'format' to
+              'buffer' at offset 'offset', filling at most 'length' bytes and returns a
+              ColorFormatPixelLayout object which describes the pixel layout.
+            </p>
+            <p>
+              Throws if 'format' is not supported.
+            </p>
+            <p>
+              Each time this method is invoked returns a new ColorFormatPixelLayout
+              object.
+            </p>
+            <p>
+              @return a ColorFormatPixelLayout object which describes the pixel layout.
+            </p>
+            <dl class="parameters">
+              <dt>ColorFormat format</dt>
+              <dd>
+                <p>The format that users want.</p>
+              </dd>
+              <dt>ArrayBuffer buffer</dt>
+              <dd>
+                <p>A container for receiving the mapped image data.</p>
+              </dd>
+              <dt>long offset</dt>
+              <dd>
+                <p>The beginning position of the 'buffer' to place the mapped data.</p>
+              </dd>
+              <dt>long length</dt>
+              <dd>
+                <p>The length of space in 'buffer' that could be filled.</p>
+              </dd>
+            </dl>
+          </dd>
+
+          <dt>
+            [Throws]
+            boolean setDataFrom()
+          </dt>
+          <dd>
+            <p>
+              We need to redesign this one.......
+            </p>
+            <dl class="parameters">
+              <dt>ColorFormat format</dt>
+              <dd>
+                <p>The format that users want.</p>
+              </dd>
+              <dt>ArrayBuffer buffer</dt>
+              <dd>
+                <p>A container for receiving the mapped image data.</p>
+              </dd>
+              <dt>long offset</dt>
+              <dd>
+                <p>The beginning position of the 'buffer' to place the mapped data.</p>
+              </dd>
+              <dt>long length</dt>
+              <dd>
+                <p>The length of space in 'buffer' that could be filled.</p>
+              </dd>
+              <dt>long width</dt>
+              <dd>
+                <p>The width of the input image.</p>
+              </dd>
+              <dt>long height</dt>
+              <dd>
+                <p>The height of the input image.</p>
+              </dd>
+              <dt>long stride</dt>
+              <dd>
+                <p>The stride of the input image. (?)</p>
+              </dd>
+
+            </dl>
+          </dd>
+        </dl>
+      </section>
+
+    </section>
+
     <section class='appendix'>
       <h2>Acknowledgements</h2>
       <p>
