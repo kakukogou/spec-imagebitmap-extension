@@ -39,10 +39,20 @@
           // only "name" is required
           editors:  [
               {
-                  name:       "Tzu-Hao, Kuo",
-                  company:    "Mozilla",
-                  companyURL: "http://www.mozilla.com/"
+                name:       "Tzuhao Kuo",
+                company:    "Mozilla",
+                companyURL: "http://www.mozilla.com/"
               },
+              {
+                name:       "Chiahung Tai",
+                company:    "Mozilla",
+                companyURL: "http://www.mozilla.com/"
+              },
+              {
+                name:       "Robert O'Callahan",
+                company:    "Mozilla",
+                companyURL: "http://www.mozilla.com/"
+              }
           ],
 
           // name of the WG
@@ -67,9 +77,10 @@
   <body>
     <section id='abstract'>
       <p>
-        This specification extends the ImageBitmap interface to allow JavaScript
-        developers to read an ImageBitmap's underlying data out and set an
-        external data into an ImageBitmap in a set of supported color formats.
+        This specification extends the <a><code>ImageBitmap interface</code></a>
+        to allow JavaScript developers to read the underlying data out and set
+        an external data into an <a><code>ImageBitmap</code></a> in a set of
+        supported color formats.
       </p>
       <p>
 
@@ -90,32 +101,71 @@
     <section>
       <h2>Introduction</h2>
       <p>
-        This is a sub-bug of project FoxEye which's goal is to streamline the video
-        processing framework on the web platform. It provides web applications a way
-        to hook a script (ran in a Web Worker) to a video track (of a MediaStream)
-        so that each frame will be processed accordingly.
+        The <a><code>ImageBitmap interface</code></a> is originally designed as
+        a pure opaque handler to an image data buffer inside a browser so that
+        how it stores the buffer is uknown to users and optimized to platforms.
       </p>
       <p>
-        We choose ImageBitmap (instead of ImageData) as the container of video frames
-        because the decoded video frame data might exist in either CPU or GPU memory.
-        ImageBitmap is designed as an opaque handler so that users do not need to
-        know where the real buffer is.
+        Currently, the <em>Media Capture Stream with Video Worker</em>
+        specification [<a>mediacapture-worker</a>] proposes a video processing
+        framework on the web platform. It provides web applications a way to
+        hook a script (ran in a Web Worker) to a video track (of a MediaStream)
+        so that each frame will be processed accordingly. If the worker is
+        successfully hooked to a track, the framework will post a
+        <code>VideoProcessEvent</code> to the worker per frame.
+        A <code>VideoProcessEvent</code> has an <code>inputImageBitmap</code>
+        property and an <code>outputImageBitmap</code> property so that
+        JavaScript developers could read the raw image data of the current video
+        frame out from the <code>inputImageBitmap</code>, then after some
+        processing, write the processed image data back into the
+        <code>outputImageBitmap</code>. This specification is meant to extend
+        the <a>ImageBitmap interface</a> with new APIs to read data
+        from and write data back into an <code>ImageBitmap</code>.
+      </p>
+      <p>
+        The <em>Media Capture Stream with Video Worker</em> specification
+        [<a>mediacapture-worker</a>] chooses <a><code>ImageBitmap</code></a>
+        (instead of <code>ImageData</code>) as the container of video frames
+        because the decoded video frame data might exist in either CPU or GPU
+        memory which perfectly matches the nature of
+        <a><code>ImageBitmap</code></a> as an opaque handler.
       </p>
       <p>
         Considering how would developers process video frames, there are two possible
         ways, via JavaScript(/asm.js) or WebGL.
         <ol>
           <li>
-            If users use WebGL, then treating an ImageBitmap as an opaque container
-            and passing it into WebGL.
+            If developers use WebGL, then treating an ImageBitmap as an opaque
+            container, passing it into the WebGL context and the browser will
+            handle how to uploade the ras image data into the GPU memory.
+            Possiblely, the dada is already in the GPU memory so that no further
+            operation is needed through.
           </li>
           <li>
-            If users use JavaScript(/asm.js) to process the frames, then new APIs to
-            access the raw data inside an ImageBitmp are needed.
+            If developers use JavaScript(/asm.js) to process the frames, then
+            new APIs to access the raw data inside an ImageBitmp are needed
+            since the current <a><code>ImageBitmap interface</code></a> provides
+            no way for developers to do so.
           </li>
         </ol>
-        The 2nd scenario above is the one which I would like to enable in this
-        extension set.
+      </p>
+    </section>
+
+    <section>
+      <h2>
+        Dependencies
+      </h2>
+      <p>
+        The <code><a href=
+        "http://www.w3.org/TR/html51/webappapis.html#images">
+        <dfn>ImageBitmap interface</dfn></a></code> this specification extends
+        are defined in [[!HTML51]].
+      </p>
+      <p>
+        The <em>Media Capture Stream with Video Worker</em> specificaton proposes a video
+        processing framework on the web platform.
+        [<a href="http://chiahungtai.github.io/mediacapture-worker/">
+        <dfn>mediacapture-worker</dfn></a>]
       </p>
     </section>
 
@@ -143,8 +193,12 @@
             (Ex: RGBRGBRGBRGBRGB......)
           </li>
         </ol>
-        Note: color formats belong to the same color space might have different pixel
-              layouts.
+        <div class="note">
+          <p>
+            Color formats belong to the same color space might have different
+            pixel layouts.
+          </p>
+        </div>
       </p>
     </section>
 
@@ -154,9 +208,10 @@
       <section>
         <h2>ColorFormat</h2>
         <p>
-          An enumeration 'ColorFormat' defines a list of color formats which are
-          exposed to users. The extend APIs of ImageBitmap use this enumeration to
-          negotiate the format while accessing the underlying data of ImageBitmap.
+          An enumeration <a>ColorFormat</a> defines a list of color formats
+          which are exposed to users. The extend APIs of <a>ImageBitmap</a> use
+          this enumeration to negotiate the format while accessing the
+          underlying data of <a>ImageBitmap</a> and writing back.
         </p>
         <div class="note">
           <p>
@@ -242,33 +297,37 @@
       <section>
         <h2>PixelLayout</h2>
         <p>
-          Two interfaces, 'ColorFormatPixelLayout' and 'ChannelPixelLayout', help
-          together to generalize the variety of pixel layouts among color formats.
+          Two interfaces, <a>ColorFormatPixelLayout</a> and
+          <a>ChannelPixelLayout</a>, help together to generalize the variety of
+          pixel layouts among color formats.
         </p>
         <p>
-          The 'ColorFormatPixelLayout' represents the pixel layout of a certain color
-          space and since a color format is composed by at least one channel so
-          'ColorFormatPixelLayout' contains at least one 'ChannelPixelLayout'.
+          The <a>ColorFormatPixelLayout</a> represents the pixel layout of a
+          certain color space and since a color format is composed by at least
+          one channel so <a>ColorFormatPixelLayout</a> contains at least one
+          <a>ChannelPixelLayout</a>.
         </p>
         <p>
-          Although Image/Video frame is a two-dimensional structure, its data is
-          usually stored in an one-dimensional array and 'ChannelPixelLayout'
-          use the following properties to describe the layout of pixel values in the
-          buffer.
+          Although an Image/Video frame is a two-dimensional structure, its data
+          is usually stored in an one-dimensional array and the
+          <a>ChannelPixelLayout</a> use the following properties to describe the
+          layout of pixel values in the one dimentional array buffer.
           <ol>
             <li>
-              'offset': where is each channel's data starts from. (Relative to the
-                    beginning of the video data one-dimension array.)
+              <em>offset</em>: where is each channel's data starts from.
+              (Relative to the beginning of the video data one-dimension array.)
             </li>
             <li>
-              'width' and 'height': how much samples are in each channel.
+              <em>width</em> and <em>height</em>:
+              how much samples are in each channel.
             </li>
             <li>
-              'stride': the padding of each row. (Memory alignment purpose.)
+              <em>stride</em>: the padding of each row.
+              (Memory alignment purpose.)
             </li>
             <li>
-              'skip': this is used to describe interleaving layout. (For planar layout,
-                          this property will be zero.)
+              <em>skip</em>: this is used to describe interleaving layout.
+              (For planar layout, this property will be zero.)
             </li>
           </ol>
         </p>
@@ -457,10 +516,11 @@
               Find the best color format for receiving data.
             </p>
             <p>
-              @return one of the possibleFormats or the empty string if no format in the
-                      list is supported. If the possibleFormats is not given, then
-                      returns the best color format for this ImageBitmap from all
-                      supported color formats
+              @return one of the <code>possibleFormats</code> or the empty
+              string if no any format in the list is supported. If the
+              <code>possibleFormats</code> is not given, then returns the most
+              suitable color format for this ImageBitmap from all supported
+              color formats.
             </p>
             <dl class="parameters">
               <dt>optional sequence&lt;ColorFormat&gt; possibleFormats</dt>
@@ -477,14 +537,14 @@
           <dd>
             <p>
               Calculate the length of mapped data wile the image is represented
-              in the given format.
+              in the given <code>format</code>.
             </p>
             <p>
-              Throws if 'format' is not supported.
+              Throws if <code>format</code> is not supported.
             </p>
             <p>
-              @return the length (in bytes) of image data the represented in the given
-                      format.
+              @return the length (in bytes) of image data the represented in the
+              given <code>format</code>.
             </p>
             <dl class="parameters">
               <dt>ColorFormat format</dt>
@@ -495,24 +555,28 @@
           </dd>
 
           <dt>
-          [Throws]
-          ColorFormatPixelLayout mapDataInto()
+            [Throws]
+            Promise&lt;ColorFormatPixelLayout&gt; mapDataInto()
+            <!-- ColorFormatPixelLayout mapDataInto() -->
           </dt>
           <dd>
             <p>
-              Makes a copy of the underlying image data in the given format 'format' to
-              'buffer' at offset 'offset', filling at most 'length' bytes and returns a
-              ColorFormatPixelLayout object which describes the pixel layout.
+              Makes a copy of the underlying image data in the given format
+              <code>format</code> into the given <code>buffer</code> at offset
+              <code>offset</code>, filling at most <code>length</code> bytes and
+              returns a <a>ColorFormatPixelLayout</a> object which describes the
+              pixel layout.
             </p>
             <p>
-              Throws if 'format' is not supported.
+              Throws if <code>format</code> is not supported.
             </p>
             <p>
-              Each time this method is invoked returns a new ColorFormatPixelLayout
-              object.
+              Each time this method is invoked returns a new
+              <a>ColorFormatPixelLayout</a> object.
             </p>
             <p>
-              @return a ColorFormatPixelLayout object which describes the pixel layout.
+              @return a <a>ColorFormatPixelLayout</a> object which describes the
+              pixel layout.
             </p>
             <dl class="parameters">
               <dt>ColorFormat format</dt>
@@ -525,11 +589,17 @@
               </dd>
               <dt>long offset</dt>
               <dd>
-                <p>The beginning position of the 'buffer' to place the mapped data.</p>
+                <p>
+                  The beginning position of the <code>buffer</code> to place
+                  the mapped data.
+                </p>
               </dd>
               <dt>long length</dt>
               <dd>
-                <p>The length of space in 'buffer' that could be filled.</p>
+                <p>
+                  The length of space in the <code>buffer</code> that could be
+                  filled.
+                </p>
               </dd>
             </dl>
           </dd>
@@ -553,11 +623,17 @@
               </dd>
               <dt>long offset</dt>
               <dd>
-                <p>The beginning position of the 'buffer' to place the mapped data.</p>
+                <p>
+                  The beginning position of the <code>buffer</code> to place the
+                  mapped data.
+                </p>
               </dd>
               <dt>long length</dt>
               <dd>
-                <p>The length of space in 'buffer' that could be filled.</p>
+                <p>
+                  The length of space in the <code>buffer</code> that could be
+                  filled.
+                </p>
               </dd>
               <dt>long width</dt>
               <dd>
@@ -582,7 +658,8 @@
     <section class='appendix'>
       <h2>Acknowledgements</h2>
       <p>
-        Many thanks to Robin Berjon for making our lives so much easier with his cool tool.
+        Thanks to Jeff Muizelaar for providing insightful oppinions in the APIs
+        design and the experimantal implement.
       </p>
     </section>
   </body>
