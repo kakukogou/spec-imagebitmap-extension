@@ -418,6 +418,21 @@
                   u-skip        v-skip
         </pre>
 
+        <pre class='example highlight'>
+          Example4: DEPTH image, width = 640, height = 480, stride = 640
+
+          chanel_d: offset = 0, width = 640, height = 480, stride = 640, skip = 0
+
+                  <----------------------- d-stride ---------------------->
+                  <----------------------- d-width ----------------------->
+          [index] 012345                                                  640
+                  ||||||--------------------------------------------------|
+          [data]  DDDDDDDDDDDDDDDDDDDDDDDDDDDDD...                        D
+          [data]  DDDDDDDDDDDDDDDDDDDDDDDDDDDDD...                        D
+          [data]  DDDDDDDDDDDDDDDDDDDDDDDDDDDDD...                        D
+          [data]  ......
+        </pre>
+
         <section>
           <h2>ImageFormatPixelLayout</h2>
           <dl class="idl" title="[Exposed=(Window,Worker)] interface ChannelPixelLayout">
