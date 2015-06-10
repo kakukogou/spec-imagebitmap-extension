@@ -80,7 +80,7 @@
         This specification extends the <a><code>ImageBitmap interface</code></a>
         to allow JavaScript developers to read the underlying data out and set
         an external data into an <a><code>ImageBitmap</code></a> in a set of
-        supported color formats.
+        supported <a>ColorFormat</a>s.
       </p>
       <p>
 
@@ -109,18 +109,20 @@
         Currently, the <em>Media Capture Stream with Video Worker</em>
         specification [<a>mediacapture-worker</a>] proposes a video processing
         framework on the web platform. It provides web applications a way to
-        hook a script (ran in a Web Worker) to a video track (of a MediaStream)
-        so that each frame will be processed accordingly. If the worker is
-        successfully hooked to a track, the framework will post a
-        <code>VideoProcessEvent</code> to the worker per frame.
-        A <code>VideoProcessEvent</code> has an <code>inputImageBitmap</code>
+        hook a processing script (which is ran in a <a>VideoWorker</a>) to a
+        <code>MediaStreamTrack</code> with video data so that each frame will
+        be processed accordingly. If a <a>VideoWorker</a> is successfully hooked
+        to a track, then for each video frame of the track, the framework will
+        post a <a>VideoProcessEvent</a> to the <a>VideoWorker</a>.
+        A <a>VideoProcessEvent</a> has an <code>inputImageBitmap</code>
         property and an <code>outputImageBitmap</code> property so that
         JavaScript developers could read the raw image data of the current video
         frame out from the <code>inputImageBitmap</code>, then after some
         processing, write the processed image data back into the
-        <code>outputImageBitmap</code>. This specification is meant to extend
-        the <a>ImageBitmap interface</a> with new APIs to read data
-        from and write data back into an <code>ImageBitmap</code>.
+        <code>outputImageBitmap</code> which is handled by the framework thereafter.
+        This specification is meant to extend the <a>ImageBitmap interface</a>
+        with new APIs to read data from and write data back into an
+        <code>ImageBitmap</code>.
       </p>
       <p>
         The <em>Media Capture Stream with Video Worker</em> specification
@@ -137,8 +139,8 @@
           <li>
             If developers use WebGL, then treating an ImageBitmap as an opaque
             container, passing it into the WebGL context and the browser will
-            handle how to uploade the ras image data into the GPU memory.
-            Possiblely, the dada is already in the GPU memory so that no further
+            handle how to upload the raw image data into the GPU memory.
+            Possiblely, the data is already in the GPU memory so that no further
             operation is needed through.
           </li>
           <li>
@@ -167,6 +169,16 @@
         [<a href="http://chiahungtai.github.io/mediacapture-worker/">
         <dfn>mediacapture-worker</dfn></a>]
       </p>
+      <p>
+        The <code><a href=
+        "http://chiahungtai.github.io/mediacapture-worker/#videoworker-interface">
+        <dfn>VideoWorker</dfn></a></code> is defined in [<a>mediacapture-worker</a>].
+      </p>
+      <p>
+        The <code><a href=
+        "http://chiahungtai.github.io/mediacapture-worker/#videoprocessevent-interface">
+        <dfn>VideoProcessEvent</dfn></a></code> is defined in [<a>mediacapture-worker</a>].
+      </p>
     </section>
 
     <section>
@@ -177,14 +189,14 @@
         Information that we need to know about a color format includes color space,
         channel permutation and the pixel layout. A color space is the space used to
         express colors; the space is constructed by coordinates which is called color
-        channels. An image or video frame is composed by pixels and each pixel's
+        channels. An image or a video frame is composed by pixels and each pixel's
         color is represented by values from all channels of a given color space. The
         pixel values might be arranged in a planar way or interleaving way:
         <ol>
           <li>
             Planar layout: each channel has its pixel values stored consecutively in
-            separated buffers (/planes) and channel buffers are stored consecutively
-            in memory.
+            separated buffers (a.k.a. planes) and then all channel buffers are stored
+            consecutively in memory.
             (Ex: RRRRRR......GGGGGG......BBBBBB......)
           </li>
           <li>
@@ -308,10 +320,10 @@
           <a>ChannelPixelLayout</a>.
         </p>
         <p>
-          Although an Image/Video frame is a two-dimensional structure, its data
-          is usually stored in an one-dimensional array and the
-          <a>ChannelPixelLayout</a> use the following properties to describe the
-          layout of pixel values in the one dimentional array buffer.
+          Although an image or a video frame is a two-dimensional structure, its data
+          is usually stored in an one-dimensional array in the raw-major way and the
+          <a>ChannelPixelLayout</a> uses the following properties to describe
+          how pixel values are arranged in the one dimentional array buffer.
           <ol>
             <li>
               <em>offset</em>: where is each channel's data starts from.
@@ -322,8 +334,7 @@
               how much samples are in each channel.
             </li>
             <li>
-              <em>stride</em>: the padding of each row.
-              (Memory alignment purpose.)
+              <em>stride</em>: the total bytes of each raw plus the padding bytes of each row.
             </li>
             <li>
               <em>skip</em>: this is used to describe interleaving layout.
@@ -455,7 +466,8 @@
             <dd>
               <p>
                 The stride of this channel.
-                This is used to describe the padding of this channel.
+                The stride is the number of bytes between the beging two consecutive raws in memory.
+                The total bytes of each raw plus the padding bytes of each raw.
               </p>
             </dd>
 
@@ -502,11 +514,6 @@
 
       <section>
         <h2>ImageBitmap extensions</h2>
-        <div class="note">
-          <p>
-            We need to redesign the "setDataFrom()" method.
-          </p>
-        </div>
         <dl class="idl" title="[Exposed=(Window,Worker)] partial interface ImageBitmap">
           <dt>
             ColorFormat findOptimalFormat()
@@ -610,44 +617,39 @@
           </dt>
           <dd>
             <p>
-              We need to redesign this one.......
+              Set an external image data into a <code>ImageBitmap</code>.
             </p>
             <dl class="parameters">
               <dt>ColorFormat format</dt>
               <dd>
-                <p>The format that users want.</p>
+                <p>The format of the external image data.</p>
               </dd>
               <dt>ArrayBuffer buffer</dt>
               <dd>
-                <p>A container for receiving the mapped image data.</p>
+                <p>A container of the external image data.</p>
               </dd>
               <dt>long offset</dt>
               <dd>
                 <p>
-                  The beginning position of the <code>buffer</code> to place the
-                  mapped data.
+                  The beginning position of the <code>buffer</code> where the
+                  external image data is placed.
                 </p>
               </dd>
               <dt>long length</dt>
               <dd>
                 <p>
-                  The length of space in the <code>buffer</code> that could be
-                  filled.
+                  The length of spaces in the <code>buffer</code> that the
+                  external image data is palced.
                 </p>
               </dd>
-              <dt>long width</dt>
+              <dt>ColorFormatPixelLayout layout</dt>
               <dd>
-                <p>The width of the input image.</p>
+                <p>
+                  The pixel layout of the external image data, which describes
+                  how the data is arranged in the given <code>buffer</code> as
+                  the given <code>format</code>.
+                </p>
               </dd>
-              <dt>long height</dt>
-              <dd>
-                <p>The height of the input image.</p>
-              </dd>
-              <dt>long stride</dt>
-              <dd>
-                <p>The stride of the input image. (?)</p>
-              </dd>
-
             </dl>
           </dd>
         </dl>
