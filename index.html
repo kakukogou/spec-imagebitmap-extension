@@ -190,7 +190,7 @@
     </section>
 
     <section>
-      <h2>Color format</h2>
+      <h2>Image format</h2>
       <p>
         Image/Video data might exists in a variety of color formats. Developers need
         to know how the data is formated so that they are able to process it.
@@ -226,9 +226,9 @@
       <h2>Components</h2>
 
       <section>
-        <h2>ColorFormat</h2>
+        <h2>ImageFormat</h2>
         <p>
-          An enumeration <a>ColorFormat</a> defines a list of color formats
+          An enumeration <a>ImageFormat</a> defines a list of color formats
           which are exposed to users. The extend APIs of <a>ImageBitmap</a> use
           this enumeration to negotiate the format while accessing the
           underlying data of <a>ImageBitmap</a> and writing back.
@@ -238,7 +238,7 @@
             We need to elaborate this list for standardization.
           </p>
         </div>
-        <dl id="enum-basic" class="idl" title="enum ColorFormat">
+        <dl id="enum-basic" class="idl" title="enum ImageFormat">
           <dt>RGBA32</dt>
           <dd>
             <p>Channel order: R, G, B, A</p>
@@ -311,20 +311,26 @@
             <p>Channel size: full lab-channels</p>
             <p>Pixel layout: interleaving lab-channels</p>
           </dd>
+          <dt>DEPTH</dt>
+          <dd>
+            <p>Channel order: DEPTH</p>
+            <p>Channel size: full depth-channel</p>
+            <p>Pixel layout: planar depth-channel</p>
+          </dd>
         </dl>
       </section>
 
       <section>
         <h2>PixelLayout</h2>
         <p>
-          Two interfaces, <a>ColorFormatPixelLayout</a> and
+          Two interfaces, <a>ImageFormatPixelLayout</a> and
           <a>ChannelPixelLayout</a>, help together to generalize the variety of
           pixel layouts among color formats.
         </p>
         <p>
-          The <a>ColorFormatPixelLayout</a> represents the pixel layout of a
+          The <a>ImageFormatPixelLayout</a> represents the pixel layout of a
           certain color space and since a color format is composed by at least
-          one channel so <a>ColorFormatPixelLayout</a> contains at least one
+          one channel so <a>ImageFormatPixelLayout</a> contains at least one
           <a>ChannelPixelLayout</a>.
         </p>
         <p>
@@ -431,8 +437,23 @@
                   u-skip        v-skip
         </pre>
 
+        <pre class='example highlight'>
+          Example4: DEPTH image, width = 640, height = 480, stride = 640
+
+          chanel_d: offset = 0, width = 640, height = 480, stride = 640, skip = 0
+
+                  <----------------------- d-stride ---------------------->
+                  <----------------------- d-width ----------------------->
+          [index] 012345                                                  640
+                  ||||||--------------------------------------------------|
+          [data]  DDDDDDDDDDDDDDDDDDDDDDDDDDDDD...                        D
+          [data]  DDDDDDDDDDDDDDDDDDDDDDDDDDDDD...                        D
+          [data]  DDDDDDDDDDDDDDDDDDDDDDDDDDDDD...                        D
+          [data]  ......
+        </pre>
+
         <section>
-          <h2>ColorFormatPixelLayout</h2>
+          <h2>ImageFormatPixelLayout</h2>
           <dl class="idl" title="[Exposed=(Window,Worker)] interface ChannelPixelLayout">
             <dt>
               [Constant]
@@ -505,7 +526,7 @@
 
         <section>
           <h2>ChannelPixelLayout</h2>
-          <dl class="idl" title="[Exposed=(Window,Worker)] interface ColorFormatPixelLayout">
+          <dl class="idl" title="[Exposed=(Window,Worker)] interface ImageFormatPixelLayout">
             <dt>
               [Constant, Cached]
               readonly attribute sequence&lt;ChannelPixelLayout&gt; channels
@@ -524,7 +545,7 @@
         <h2>ImageBitmap extensions</h2>
         <dl class="idl" title="[Exposed=(Window,Worker)] partial interface ImageBitmap">
           <dt>
-            ColorFormat findOptimalFormat()
+            ImageFormat findOptimalFormat()
           </dt>
           <dd>
             <p>
@@ -538,7 +559,7 @@
               color formats.
             </p>
             <dl class="parameters">
-              <dt>optional sequence&lt;ColorFormat&gt; possibleFormats</dt>
+              <dt>optional sequence&lt;ImageFormat&gt; possibleFormats</dt>
               <dd>
                 <p>A list of color formats that users can handler.</p>
               </dd>
@@ -562,7 +583,7 @@
               given <code>format</code>.
             </p>
             <dl class="parameters">
-              <dt>ColorFormat format</dt>
+              <dt>ImageFormat format</dt>
               <dd>
                 <p>The format that users want.</p>
               </dd>
@@ -571,15 +592,15 @@
 
           <dt>
             [Throws]
-            Promise&lt;ColorFormatPixelLayout&gt; mapDataInto()
-            <!-- ColorFormatPixelLayout mapDataInto() -->
+            Promise&lt;ImageFormatPixelLayout&gt; mapDataInto()
+            <!-- ImageFormatPixelLayout mapDataInto() -->
           </dt>
           <dd>
             <p>
               Makes a copy of the underlying image data in the given format
               <code>format</code> into the given <code>buffer</code> at offset
               <code>offset</code>, filling at most <code>length</code> bytes and
-              returns a <a>ColorFormatPixelLayout</a> object which describes the
+              returns a <a>ImageFormatPixelLayout</a> object which describes the
               pixel layout.
             </p>
             <p>
@@ -587,14 +608,14 @@
             </p>
             <p>
               Each time this method is invoked returns a new
-              <a>ColorFormatPixelLayout</a> object.
+              <a>ImageFormatPixelLayout</a> object.
             </p>
             <p>
-              @return a <a>ColorFormatPixelLayout</a> object which describes the
+              @return a <a>ImageFormatPixelLayout</a> object which describes the
               pixel layout.
             </p>
             <dl class="parameters">
-              <dt>ColorFormat format</dt>
+              <dt>ImageFormat format</dt>
               <dd>
                 <p>The format that users want.</p>
               </dd>
@@ -628,7 +649,7 @@
               Set an external image data into a <code>ImageBitmap</code>.
             </p>
             <dl class="parameters">
-              <dt>ColorFormat format</dt>
+              <dt>ImageFormat format</dt>
               <dd>
                 <p>The format of the external image data.</p>
               </dd>
