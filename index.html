@@ -80,7 +80,7 @@
         This specification extends the <a><code>ImageBitmap interface</code></a>
         to allow JavaScript developers to read the underlying data out and set
         an external data into an <a><code>ImageBitmap</code></a> in a set of
-        supported <a>ColorFormat</a>s.
+        supported <a>ImageFormat</a>s.
       </p>
       <p>
 
@@ -154,8 +154,8 @@
       <p>
         In this specification, the original <a>ImageBitmap interface</a> is extended
         with four methods to let developers read data from and write data into an
-        <a>ImageBitmap</a> in a set of supported <a>ColorFormat</a>s.
-        Also, two interfaces <a>ColorFormatPixelLayout</a> and <a>ChannelPixelLayout</a>
+        <a>ImageBitmap</a> in a set of supported <a>ImageFormat</a>s.
+        Also, two interfaces <a>ImageFormatPixelLayout</a> and <a>ChannelPixelLayout</a>
         are proposed to work with the extend <a>ImageBitmap</a> methods to describe
         how the accessed image data is arranged in memory.
       </p>
@@ -192,31 +192,37 @@
     <section>
       <h2>Image format</h2>
       <p>
-        Image/Video data might exists in a variety of color formats. Developers need
-        to know how the data is formated so that they are able to process it.
-        Information that we need to know about a color format includes color space,
-        channel permutation and the pixel layout. A color space is the space used to
-        express colors; the space is constructed by coordinates which is called color
-        channels. An image or a video frame is composed by pixels and each pixel's
-        color is represented by values from all channels of a given color space. The
-        pixel values might be arranged in a planar way or interleaving way:
+        An image or a video frame is conceptually a two-dimentional array of data and each element in the array is called a <strong>pixel</strong>.
+        However, the pixels are usually stored in a one-dimentional array and could be arranged in a variety of <a>ImageFormat</a>s.
+        Developers need to know how the pixels are formatted so that they are able to process it.
+
+        An <a>ImageFormat</a> describes how pixels in an image are arranged and all pixels in one single image are arranged in the same way.
+        A single pixel has at least one, but usually multiple <strong>pixel value</strong>s.
+        The range of a pixel value varies, which means different <a>ImageFormat</a>s use different <strong>data type</strong>s to store a single pixel value.
+        The most popular data type is 8-bit unsigned interger whose range is from 0 to 255, others could be 16-bit interger or 32-bit folating points and so forth.
+        The number of pixle values of a single pixel is called the number of <strong>channels</strong> of the <a>ImageFormat</a>.
+        Multiple pixel valuse of a pixel are used together to describe the captured property which could be color or depth information.
+        For example, if the data is a color image in RGB color space, then it is a three-channel <a>ImageFormat</a> and a pixel is described by R, G and B three pixel values with range from 0 to 255.
+        Another example, if the data is a gray image, then it is a single-channel <a>ImageFormat</a> with 8-bit unsigned interger data type and the pixel value describes the gray scale.
+        For depth data, it is a single channel <a>ImageFormat</a> too, but the data type is 16-bit unsigned interger and the pixel value is the depth level.
+
+        For those <a>ImageFormat</a>s whose pixel contain multiple pixel values, the pixel values might be arranged in a planar way or interleaving way:
         <ol>
           <li>
-            Planar layout: each channel has its pixel values stored consecutively in
+            <strong>Planar pixel layout</strong>: each channel has its pixel values stored consecutively in
             separated buffers (a.k.a. planes) and then all channel buffers are stored
             consecutively in memory.
             (Ex: RRRRRR......GGGGGG......BBBBBB......)
           </li>
           <li>
-            Interleaving layout: each pixel has its pixel values from all channels
+            <strong>Interleaving pixel layout</strong>: each pixel has its pixel values from all channels
             stored together and interleaves all channels.
             (Ex: RGBRGBRGBRGBRGB......)
           </li>
         </ol>
         <div class="note">
           <p>
-            Color formats belong to the same color space might have different
-            pixel layouts.
+            <a>ImageFormat</a>s belong to the same color space might have different pixel layouts.
           </p>
         </div>
       </p>
@@ -228,7 +234,7 @@
       <section>
         <h2>ImageFormat</h2>
         <p>
-          An enumeration <a>ImageFormat</a> defines a list of color formats
+          An enumeration <a>ImageFormat</a> defines a list of image formats
           which are exposed to users. The extend APIs of <a>ImageBitmap</a> use
           this enumeration to negotiate the format while accessing the
           underlying data of <a>ImageBitmap</a> and writing back.
@@ -325,11 +331,11 @@
         <p>
           Two interfaces, <a>ImageFormatPixelLayout</a> and
           <a>ChannelPixelLayout</a>, help together to generalize the variety of
-          pixel layouts among color formats.
+          pixel layouts among image formats.
         </p>
         <p>
           The <a>ImageFormatPixelLayout</a> represents the pixel layout of a
-          certain color space and since a color format is composed by at least
+          certain image format and since a image format is composed by at least
           one channel so <a>ImageFormatPixelLayout</a> contains at least one
           <a>ChannelPixelLayout</a>.
         </p>
@@ -473,7 +479,7 @@
             <dd>
               <p>
                 The width of this channel.
-                Channels in a color format may have different width.
+                Channels in a image format may have different width.
               </p>
             </dd>
 
@@ -484,7 +490,7 @@
             <dd>
               <p>
                 The height of this channel.
-                Channels in a color format may have different height.
+                Channels in a image format may have different height.
               </p>
             </dd>
 
@@ -533,8 +539,8 @@
             </dt>
             <dd>
               <p>
-                Channel information of this color format.
-                Each color format has at least one channel.
+                Channel information of this image format.
+                Each image format has at least one channel.
               <p>
             </dd>
           </dl>
@@ -549,19 +555,19 @@
           </dt>
           <dd>
             <p>
-              Find the best color format for receiving data.
+              Find the best image format for receiving data.
             </p>
             <p>
               @return one of the <code>possibleFormats</code> or the empty
               string if no any format in the list is supported. If the
               <code>possibleFormats</code> is not given, then returns the most
-              suitable color format for this ImageBitmap from all supported
-              color formats.
+              suitable image format for this ImageBitmap from all supported
+              image formats.
             </p>
             <dl class="parameters">
               <dt>optional sequence&lt;ImageFormat&gt; possibleFormats</dt>
               <dd>
-                <p>A list of color formats that users can handler.</p>
+                <p>A list of image formats that users can handler.</p>
               </dd>
             </dl>
           </dd>
@@ -671,7 +677,7 @@
                   external image data is palced.
                 </p>
               </dd>
-              <dt>ColorFormatPixelLayout layout</dt>
+              <dt>ImageFormatPixelLayout layout</dt>
               <dd>
                 <p>
                   The pixel layout of the external image data, which describes
