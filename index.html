@@ -167,9 +167,12 @@
       </h2>
       <p>
         The <code><a href=
-        "http://www.w3.org/TR/html51/webappapis.html#images">
-        <dfn>ImageBitmap interface</dfn></a></code> this specification extends
-        are defined in [[!HTML51]].
+        "http://www.w3.org/TR/html51/webappapis.html#imagebitmap">
+        <dfn>ImageBitmap</dfn></a></code> interface
+        and <code><a href=
+        "http://www.w3.org/TR/html51/webappapis.html#imagebitmapfactories">
+        <dfn>ImageBitmapFactories</dfn></a></code> interface this specification
+        extends are defined in [[!HTML51]].
       </p>
       <p>
         The <em>Media Capture Stream with Video Worker</em> specificaton proposes a video
@@ -179,13 +182,13 @@
       </p>
       <p>
         The <code><a href=
-        "http://chiahungtai.github.io/mediacapture-worker/#videoworker-interface">
-        <dfn>VideoWorker</dfn></a></code> is defined in [<a>mediacapture-worker</a>].
+        "http://chiahungtai.github.io/mediacapture-worker/#videoprocessevent-interface">
+        <dfn>VideoProcessEvent</dfn></a></code> is defined in [<a>mediacapture-worker</a>].
       </p>
       <p>
         The <code><a href=
-        "http://chiahungtai.github.io/mediacapture-worker/#videoprocessevent-interface">
-        <dfn>VideoProcessEvent</dfn></a></code> is defined in [<a>mediacapture-worker</a>].
+        "http://www.w3.org/TR/WebIDL-1/#common-BufferSource">
+        <dfn>BufferSource</dfn></a></code> is defined in [[!WebIDL]]
       </p>
     </section>
 
@@ -484,7 +487,7 @@
             <dd>
               <p>
                 The beginning position of this channel's data (relative to the given
-                ArrayBuffer parameter of the mapDataInto() method.)
+                BufferSource parameter of the mapDataInto() method.)
               </p>
             </dd>
 
@@ -694,7 +697,7 @@
               <dd>
                 The format that users want.
               </dd>
-              <dt>ArrayBuffer buffer</dt>
+              <dt>BufferSource buffer</dt>
               <dd>
                 A container for receiving the mapped image data.
               </dd>
@@ -711,6 +714,119 @@
             </dl>
           </dd>
         </dl>
+      </section>
+
+      <section>
+        <h2>ImageBitmapFactories extensions</h2>
+        <dl class="idl" title="[NoInterfaceObject, Exposed=(Window,Worker)] partial interface ImageBitmapFactories">
+          <dt>
+            Promise&lt;ImageBitmap&gt;  createImageBitmap()
+          </dt>
+          <dd>
+            <p>
+              Create an <code>ImageBitmap</code> from a <code>BufferSource</code> containg raw image data.
+            </p>
+            <dl class="parameters">
+              <dt>BufferSource buffer</dt>
+              <dd>
+                A container of the raw image data.
+              </dd>
+              <dt>long offset</dt>
+              <dd>
+                The beginning position of the <code>buffer</code> where the raw image data is placed.
+              </dd>
+              <dt>long length</dt>
+              <dd>
+                The length of spaces in the <code>buffer</code> that the raw image data is palced.
+              </dd>
+              <dt>ImageFormat format</dt>
+              <dd>
+                The format of the raw image data.
+              </dd>
+              <dt>ImageFormatPixelLayout layout</dt>
+              <dd>
+                The pixel layout of the raw image data,
+                which describes how the data is arranged in the given <code>buffer</code> as the given <code>format</code>.
+              </dd>
+            </dl>
+          </dd>
+
+          <dt>
+            Promise&lt;ImageBitmap&gt;  createImageBitmap()
+          </dt>
+          <dd>
+            <p>
+              Create an <code>ImageBitmap</code> from a <code>BufferSource</code> containg raw image data with a given cropping area.
+            </p>
+            <dl class="parameters">
+              <dt>BufferSource buffer</dt>
+              <dd>
+                A container of the raw image data.
+              </dd>
+              <dt>long offset</dt>
+              <dd>
+                The beginning position of the <code>buffer</code> where the raw image data is placed.
+              </dd>
+              <dt>long length</dt>
+              <dd>
+                The length of spaces in the <code>buffer</code> that the raw image data is palced.
+              </dd>
+              <dt>ImageFormat format</dt>
+              <dd>
+                The format of the raw image data.
+              </dd>
+              <dt>ImageFormatPixelLayout layout</dt>
+              <dd>
+                The pixel layout of the raw image data,
+                which describes how the data is arranged in the given <code>buffer</code> as the given <code>format</code>.
+              </dd>
+              <dt>long sx</dt>
+              <dd>
+                The x-coordinate of the starting point of the cropping rectangle.
+              </dd>
+              <dt>long sy</dt>
+              <dd>
+                The y-coordinate of the starting point of the cropping rectangle.
+              </dd>
+              <dt>long sw</dt>
+              <dd>
+                The width of the cropping rectangle.
+              </dd>
+              <dt>long sh</dt>
+              <dd>
+                The height of the cropping rectangle.
+              </dd>
+            </dl>
+          </dd>
+        </dl>
+
+        <p>
+          When the <code>createImageBitmap()</code> is invocked, the User Agent MUST run the following steps:
+          <ol>
+            <li>
+              If either the <em>sw</em> or <em>sh</em> arguments are specified but zero,
+              return a promise rejected with an IndexSizeError exception and abort these steps.
+            </li>
+            <li>
+              If the <em>buffer</em> has been <code><a href="http://www.w3.org/TR/html51/infrastructure.html#concept-transferable-neutered">neutered</a></code>,
+              return a promise rejected with an InvalidStateError exception and abort these steps.
+            </li>
+            <li>
+              Create a new <code>ImageBitmap</code> object.
+            </li>
+            <li>
+              Let the <code>ImageBitmap</code> object's bitmap data be the image data given by the <code>BufferSource</code> object,
+              <code><a href="http://www.w3.org/TR/html51/webappapis.html#cropped-to-the-source-rectangle">cropped to the source rectangle</a></code>.
+            </li>
+            <li>
+              Return a new <code>Promise</code>, but continue running these steps <code><a href="http://www.w3.org/TR/html51/infrastructure.html#in-parallel">in parallel</a></code>.
+            </li>
+            <li>
+              <code><a href="http://www.w3.org/TR/html51/infrastructure.html#concept-resolver-fulfill">Resolve</a></code> the <code>Promise</code> with the new <code>ImageBitmap</code> object as the value.
+            </li>
+          <ol>
+
+        </p>
       </section>
 
     </section>
