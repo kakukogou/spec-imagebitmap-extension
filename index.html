@@ -250,78 +250,91 @@
             <p>Channel order: R, G, B, A</p>
             <p>Channel size: full rgba-chennels</p>
             <p>Pixel layout: interleaving rgba-channels</p>
+            <p>Data type: 8-bit unsigned integer</p>
           </dd>
           <dt>BGRA32</dt>
           <dd>
             <p>Channel order: B, G, R, A</p>
             <p>Channel size: full bgra-channels</p>
             <p>Pixel layout: interleaving bgra-channels</p>
+            <p>Data type: 8-bit unsigned integer</p>
           </dd>
           <dt>RGB24</dt>
           <dd>
             <p>Channel order: R, G, B</p>
             <p>Channel size: full rgb-channels</p>
             <p>Pixel layout: interleaving rgb-channels</p>
+            <p>Data type: 8-bit unsigned integer</p>
           </dd>
           <dt>BGR24</dt>
           <dd>
             <p>Channel order: B, G, R</p>
             <p>Channel size: full bgr-channels</p>
             <p>Pixel layout: interleaving bgr-channels</p>
+            <p>Data type: 8-bit unsigned integer</p>
           </dd>
           <dt>GRAY8</dt>
           <dd>
             <p>Channel order: GRAY</p>
             <p>Channel size: full gray-channel</p>
             <p>Pixel layout: planar gray-channel</p>
+            <p>Data type: 8-bit unsigned integer</p>
           </dd>
           <dt>YUV444P</dt>
           <dd>
             <p>Channel order: Y, U, V</p>
             <p>Channel size: full yuv-channels</p>
             <p>Pixel layout: planar yuv-channels</p>
+            <p>Data type: 8-bit unsigned integer</p>
           </dd>
           <dt>YUV422P</dt>
           <dd>
             <p>Channel order: Y, U, V</p>
             <p>Channel size: full y-channel, half uv-channels</p>
             <p>Pixel layout: planar yuv-channels</p>
+            <p>Data type: 8-bit unsigned integer</p>
           </dd>
           <dt>YUV420P</dt>
           <dd>
             <p>Channel order: Y, U, V</p>
             <p>Channel size: full y-channel, quarter uv-channels</p>
             <p>Pixel layout: planar yuv-channels</p>
+            <p>Data type: 8-bit unsigned integer</p>
           </dd>
           <dt>YUV420SP_NV12</dt>
           <dd>
             <p>Channel order: Y, U, V</p>
             <p>Channel size: full y-channel, quarter uv-channels</p>
             <p>Pixel layout: planar y-channel, interleaving uv-channels</p>
+            <p>Data type: 8-bit unsigned integer</p>
           </dd>
           <dt>YUV420SP_NV21</dt>
           <dd>
             <p>Channel order: Y, V, U</p>
             <p>Channel size: full y-channel, quarter uv-channels</p>
             <p>Pixel layout: planar y-channel, interleaving vu-channels</p>
+            <p>Data type: 8-bit unsigned integer</p>
           </dd>
           <dt>HSV</dt>
           <dd>
             <p>Channel order: H, S, V</p>
             <p>Channel size: full hsv-channels</p>
             <p>Pixel layout: interleaving hsv-channels</p>
+            <p>Data type: 8-bit unsigned integer</p>
           </dd>
           <dt>Lab</dt>
           <dd>
             <p>Channel order: l, a, b</p>
             <p>Channel size: full lab-channels</p>
             <p>Pixel layout: interleaving lab-channels</p>
+            <p>Data type: 8-bit unsigned integer</p>
           </dd>
           <dt>DEPTH</dt>
           <dd>
             <p>Channel order: DEPTH</p>
             <p>Channel size: full depth-channel</p>
             <p>Pixel layout: planar depth-channel</p>
+            <p>Data type: 16-bit unsigned integer</p>
           </dd>
         </dl>
       </section>
@@ -354,6 +367,9 @@
               how much samples are in each channel.
             </li>
             <li>
+              <em>data type</em>: the data type used to store one single pixel value.
+            </li>
+            <li>
               <em>stride</em>: the total bytes of each raw plus the padding bytes of each row.
             </li>
             <li>
@@ -366,10 +382,10 @@
         <pre class='example highlight'>
           Example1: RGBA image, width = 620, height = 480, stride = 2560
 
-          chanel_r: offset = 0, width = 620, height = 480, stride = 2560, skip = 3
-          chanel_g: offset = 1, width = 620, height = 480, stride = 2560, skip = 3
-          chanel_b: offset = 2, width = 620, height = 480, stride = 2560, skip = 3
-          chanel_a: offset = 3, width = 620, height = 480, stride = 2560, skip = 3
+          chanel_r: offset = 0, width = 620, height = 480, data type = uint8, stride = 2560, skip = 3
+          chanel_g: offset = 1, width = 620, height = 480, data type = uint8, stride = 2560, skip = 3
+          chanel_b: offset = 2, width = 620, height = 480, data type = uint8, stride = 2560, skip = 3
+          chanel_a: offset = 3, width = 620, height = 480, data type = uint8, stride = 2560, skip = 3
 
                   <---------------------------- stride ---------------------------->
                   <---------------------- width x 4 ---------------------->
@@ -386,8 +402,8 @@
           Example2: YUV420P image, width = 620, height = 480, stride = 640
 
           chanel_y: offset = 0, width = 620, height = 480, stride = 640, skip = 0
-          chanel_u: offset = 307200, width = 310, height = 240, stride = 320, skip = 0
-          chanel_v: offset = 384000, width = 310, height = 240, stride = 320, skip = 0
+          chanel_u: offset = 307200, width = 310, height = 240, data type = uint8, stride = 320, skip = 0
+          chanel_v: offset = 384000, width = 310, height = 240, data type = uint8, stride = 320, skip = 0
 
                   <--------------------------- y-stride --------------------------->
                   <----------------------- y-width ----------------------->
@@ -419,8 +435,8 @@
           Example3: YUV420SP_NV12 image, width = 620, height = 480, stride = 640
 
           chanel_y: offset = 0, width = 620, height = 480, stride = 640, skip = 0
-          chanel_u: offset = 307200, width = 310, height = 240, stride = 640, skip = 1
-          chanel_v: offset = 307201, width = 310, height = 240, stride = 640, skip = 1
+          chanel_u: offset = 307200, width = 310, height = 240, data type = uint8, stride = 640, skip = 1
+          chanel_v: offset = 307201, width = 310, height = 240, data type = uint8, stride = 640, skip = 1
 
                   <--------------------------- y-stride -------------------------->
                   <----------------------- y-width ---------------------->
@@ -444,13 +460,13 @@
         </pre>
 
         <pre class='example highlight'>
-          Example4: DEPTH image, width = 640, height = 480, stride = 640
+          Example4: DEPTH image, width = 640, height = 480, stride = 1280
 
-          chanel_d: offset = 0, width = 640, height = 480, stride = 640, skip = 0
+          chanel_d: offset = 0, width = 640, height = 480, data type = uint16, stride = 1280, skip = 0
 
                   <----------------------- d-stride ---------------------->
                   <----------------------- d-width ----------------------->
-          [index] 012345                                                  640
+          [index] 012345                                                  1280
                   ||||||--------------------------------------------------|
           [data]  DDDDDDDDDDDDDDDDDDDDDDDDDDDDD...                        D
           [data]  DDDDDDDDDDDDDDDDDDDDDDDDDDDDD...                        D
@@ -496,6 +512,16 @@
 
             <dt>
               [Constant]
+              readonly attribute DataType dataType
+            </dt>
+            <dd>
+              <p>
+                The data type used to store one single pixel value.
+              </p>
+            </dd>
+
+            <dt>
+              [Constant]
               readonly attribute unsigned long stride
             </dt>
             <dd>
@@ -527,6 +553,49 @@
                 </ul>
               </p>
             </dd>
+          </dl>
+
+          <dl id="enum-basic" class="idl" title="enum DataType">
+            <dt>uint8</dt>
+            <dd>
+              8-bit unsigned integer.
+            </dd>
+
+            <dt>int8</dt>
+            <dd>
+              8-bit integer.
+            </dd>
+
+            <dt>uint16</dt>
+            <dd>
+              16-bit unsigned integer.
+            </dd>
+
+            <dt>int16</dt>
+            <dd>
+              16-bit integer.
+            </dd>
+
+            <dt>uint32</dt>
+            <dd>
+              32-bit unsigned integer.
+            </dd>
+
+            <dt>int32</dt>
+            <dd>
+              32-bit integer.
+            </dd>
+
+            <dt>float32</dt>
+            <dd>
+              32-bit IEEE floating point number.
+            </dd>
+
+            <dt>float64</dt>
+            <dd>
+              64-bit IEEE floating point number.
+            </dd>
+
           </dl>
         </section>
 
