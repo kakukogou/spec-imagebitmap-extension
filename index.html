@@ -77,13 +77,14 @@
   <body>
     <section id='abstract'>
       <p>
-        This specification extends the <a><code>ImageBitmap interface</code></a>
-        to allow JavaScript developers to read the underlying data out and set
-        an external data into an <a><code>ImageBitmap</code></a> in a set of
-        supported <a>ImageFormat</a>s.
-      </p>
-      <p>
-
+        This specification extends the <a>ImageBitmap</a> interface
+        to allow JavaScript developers to read the underlying data from an
+        <a>ImageBitmap</a> object into a given
+        <a>BufferSource</a> object in a set of supported <a>ImageFormat</a>s.
+        Also, this specification extends the
+        <a>ImageBitmapFactories</a> interface to allow JavaScript
+        developers to create an <a>ImageBitmap</a> object from a given
+        <a>BufferSource</a> object.
       </p>
     </section>
 
@@ -101,28 +102,34 @@
     <section>
       <h2>Introduction</h2>
       <p>
-        The <a><code>ImageBitmap interface</code></a> is originally designed as
+        The <a>ImageBitmap</a> interface is originally designed as
         a pure opaque handler to an image data buffer inside a browser so that
-        how it stores the buffer is uknown to users and optimized to platforms.
+        how the browser stores the buffer is uknown to users and optimized to
+        platforms.
       </p>
       <p>
-        Currently, the <em>Media Capture Stream with Video Worker</em>
+        Recently, the <em>Media Capture Stream with Video Worker</em>
         specification [<a>mediacapture-worker</a>] proposes a video processing
         framework on the web platform. It provides web applications a way to
-        hook a processing script (which is ran in a <a>VideoWorker</a>) to a
+        hook a processing script (which is ran in a <code>WebWorker</code>) to a
         <code>MediaStreamTrack</code> with video data so that each frame will
-        be processed accordingly. If a <a>VideoWorker</a> is successfully hooked
-        to a track, then for each video frame of the track, the framework will
-        post a <a>VideoProcessEvent</a> to the <a>VideoWorker</a>.
+        be processed accordingly. If a <code>WebWorker</code> is successfully hooked
+        to a track, then, for each video frame of the track, the framework posts
+        a <a>VideoProcessEvent</a> to the <code>WebWorker</code>.
         A <a>VideoProcessEvent</a> has an <code>inputImageBitmap</code>
         property and an <code>outputImageBitmap</code> property so that
-        JavaScript developers could read the raw image data of the current video
-        frame out from the <code>inputImageBitmap</code>, then after some
-        processing, write the processed image data back into the
-        <code>outputImageBitmap</code> which is handled by the framework thereafter.
-        This specification is meant to extend the <a>ImageBitmap interface</a>
-        with new APIs to read data from and write data back into an
-        <code>ImageBitmap</code>.
+        JavaScript developers can read the raw image data of the current video
+        frame out from the <code>inputImageBitmap</code> into a given
+        <a>BufferSource</a> object, then after some processing, create a new
+        <a>ImageBitmap</a> object from the processed <a>BufferSource</a> object
+        and assigned the newly created <a>ImageBitmap</a> object to the
+        <code>outputImageBitmap</code> property which is handled by the framework
+        thereafter. So, for supporting the <em>Media Capture Stream with Video
+        Worker</em>, this specification is meant to extend the <a>ImageBitmap</a>
+        interface with new APIs to read data from an
+        <a>ImageBitmap</a> object into a given <a>BufferSource</a> object and
+        extent the <a>ImageBitmapFactories</a> interface to create an
+        <a>ImageBitmap</a> object from a given <a>BufferSource</a> object.
       </p>
       <p>
         The <em>Media Capture Stream with Video Worker</em> specification
@@ -145,19 +152,21 @@
           </li>
           <li>
             If developers use JavaScript(/asm.js) to process the frames, then
-            new APIs to access the raw data inside an ImageBitmp are needed
-            since the current <a><code>ImageBitmap interface</code></a> provides
+            new APIs to access the raw data inside an <a>ImageBitmap</a> object are needed
+            since the current <a>ImageBitmap</a> interface provides
             no way for developers to do so.
           </li>
         </ol>
       </p>
       <p>
-        In this specification, the original <a>ImageBitmap interface</a> is extended
-        with four methods to let developers read data from and write data into an
-        <a>ImageBitmap</a> in a set of supported <a>ImageFormat</a>s.
-        Also, two interfaces <a>ImageFormatPixelLayout</a> and <a>ChannelPixelLayout</a>
+        In this specification, the original <a>ImageBitmap</a> interface is extended
+        with three methods to let developers read data from an
+        <a>ImageBitmap</a> object in a set of supported <a>ImageFormat</a>s and
+        two interfaces <a>ImageFormatPixelLayout</a> and <a>ChannelPixelLayout</a>
         are proposed to work with the extend <a>ImageBitmap</a> methods to describe
-        how the accessed image data is arranged in memory.
+        how the accessed image data is arranged in memory. Also, the <a>ImageBitmapFactories</a>
+        interface is extended to let developers create <a>ImageBitmap</a> from
+        a given <a>BufferSource</a>.
       </p>
     </section>
 
